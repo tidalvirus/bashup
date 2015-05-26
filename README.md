@@ -10,10 +10,10 @@ This is so it can't be exited by accident.
 
 ## Commands
 
-F - toggle FPS (frames per second) display
-left/right arrow - change size of the square
-up/down arrow - change speed of the square
-space bar - the square changes colour
+* F - toggle FPS (frames per second) display
+* left/right arrow - change size of the square
+* up/down arrow - change speed of the square
+* space bar - the square changes colour
 
 ## Requirements
 
