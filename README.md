@@ -1,19 +1,28 @@
 # bashup
-Simply Python Key Bashing Program
+Simple Python Key Bashing Program
 
 Important - starts up in full screen, and needs you to press ESC AND p together to quit.
-This is so it can't be exited by accident
-
-## Requirements
-
-pygame, and python. That should be it.
+This is so it can't be exited by accident.
 
 ## What does it do?
 
-* Bounces a square on the screen off the edges.
-* The square changes colour if you press the space bar.
-* You can change the speed by pressing the cursor keys up/down.
-* You can change the size by pressing the cursor keys left/down.
+* Bounces a square on the screen off the edges. Colour can be changed, as can size and speed.
+
+## Commands
+
+F - toggle FPS (frames per second) display
+left/right arrow - change size of the square
+up/down arrow - change speed of the square
+space bar - the square changes colour
+
+## Requirements
+
+This was written to run on a Raspberry Pi. It needs:
+
+Python.
+pygame.
+
+That should be it.
 
 ## What will it do?
 
