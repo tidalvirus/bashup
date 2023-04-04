@@ -13,6 +13,8 @@
 import sys, pygame
 import random
 from pygame.locals import *
+import math
+import keyboard
 
 #               R    G    B
 WHITE       = (255, 255, 255)
@@ -55,6 +57,9 @@ def main():
 
 	FPS=30
 
+	# Block win/meta key
+	keyboard.block_key('windows')
+
 	pygame.init()
 	#screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN|pygame.HWSURFACE|pygame.DOUBLEBUF)
 	screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
@@ -73,7 +78,8 @@ def main():
 	for i in range(len(BEEPLIST)):
 		BEEPS.append(pygame.mixer.Sound(BEEPLIST[i]))
 
-	curX = curY = 0
+	curX = screen.get_size()[0]/2
+	curY = screen.get_size()[1]/2
 
 
 	playing = None
@@ -99,14 +105,16 @@ def main():
 				#	terminate()
 				if event.key == K_UP:
 					if dx >= 0:
+						speed += 10
 						dx += 10
 					else:
+						speed -= 10
 						dx -= 10
 					if dy >= 0:
 						dy += 10
 					else:
 						dy -= 10
-				if event.key == K_DOWN:
+				elif event.key == K_DOWN:
 					if dx >= 0:
 						dx -= 10
 					else:
@@ -115,21 +123,22 @@ def main():
 						dy -= 10
 					else:
 						dy += 10
-				if event.key == K_RIGHT:
+				elif event.key == K_RIGHT:
 					size += 10
-				if event.key == K_LEFT:
+				elif event.key == K_LEFT:
 					size -= 10
-				if event.key == K_SPACE:
+				elif event.key == K_SPACE:
 					colour = (random.randint(0,255),random.randint(0,255),random.randint(0,255))
-				if event.key == pygame.K_f:
+				elif event.key == pygame.K_f:
+					# clear the screen of the old fps text
+					if displayFPS == 1 and oldText:
+						oldText = None
+						screen.fill(BGCOLOR)
+						pygame.display.update()
+
 					# toggle fps display
 					displayFPS = not displayFPS
-					if fpscleared == 0:
-						pygame.draw.rect(screen, BGCOLOR, pygame.Rect(oldText))
-						fpscleared = 1
-					if fpscleared == 1 and displayFPS == 1:
-						fpscleared = 0
-				if event.key == pygame.K_m:
+				elif event.key == pygame.K_m:
 					if playing == None:
 						pygame.mixer.music.load(TUNES[random.randint(0,len(TUNES)-1)])
 						pygame.mixer.music.play(-1, 0.0)
@@ -137,18 +146,27 @@ def main():
 					else:
 						pygame.mixer.music.stop()
 						playing = None
-				if event.key == pygame.K_p:
+				elif event.key == pygame.K_p:
 					# pause
 					showTextScreen("PAUSED")
+				else:
+					rad = random.triangular(0,2*math.pi,1)
+					dx = math.cos(rad)*abs(speed)
+					dy = math.sin(rad)*abs(speed)
+
+					sound = BEEPS[0]
+					random.choice(BEEPS).play()
+
 
 
 		if displayFPS and seconds % 1:
 			# run FPS display code
 			currentfps = "{:.2f}".format(clock.get_fps())
 			displayFPStext(currentfps)
-			#print clock.get_fps()
+
 
 		(curX, curY)=moveRectangle(curX, curY, size, colour, seconds, speed)
+
 		pygame.display.update(dirty_rects)
 		#pygame.display.flip()
 		dirty_rects = []
@@ -160,19 +178,27 @@ def terminate():
 
 def displayFPStext(fps):
 	global oldText
-	fpsfont = pygame.font.Font(None, 36)
-	text = fpsfont.render(fps, 1, (0,0,255), BGCOLOR)
-	if oldText == None:
-		oldText = text.get_rect(centerx=WIDTH/2)
-	textrect = pygame.Rect(oldText)
-	pygame.draw.rect(screen, BGCOLOR, textrect)
-	dirty_rects.append(textrect)
 
-	textrect = text.get_rect(centerx=WIDTH/2)
-	dirty_rects.append(textrect)
-	screen.blit(text, textrect)
-	oldText=textrect
-	#print textrect
+	fpsfont = pygame.font.Font(None, 36)
+
+	text = fpsfont.render(fps, 1, (0,0,255), BGCOLOR)
+	newtextloc = text.get_rect(centerx=WIDTH/2)
+
+	# no previous oldText, make one up
+	if oldText == None:
+		oldText = newtextloc
+
+	# this draw over the old text
+	pygame.draw.rect(screen, BGCOLOR, oldText)
+
+	# this draws the new text
+	screen.blit(text, newtextloc)
+
+	# update the screen position where we just drew text and/or removed text
+	dirty_rects.append(oldText.union(newtextloc))
+
+	oldText = newtextloc
+
 	return
 
 def moveRectangle(x, y, size, colour, seconds, speed):
